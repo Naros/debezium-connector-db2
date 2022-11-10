@@ -319,7 +319,13 @@ public abstract class AbstractDb2DefaultValueIT extends AbstractConnectorTest {
         connection.execute("INSERT INTO dv_test (id) values (0)");
         TestHelper.refreshAndWait(connection);
         records = consumeRecordsByTopic(1);
-        assertThat(records.recordsForTopic(TestHelper.TEST_DATABASE + ".DB2INST1.DV_TEST")).hasSize(1);
+
+        // Check that the record we obtained is the one just inserted.
+        tableRecords = records.recordsForTopic(TestHelper.TEST_DATABASE + ".DB2INST1.DV_TEST");
+        assertThat(tableRecords).hasSize(1);
+        Struct after = ((Struct) tableRecords.get(0).value()).getStruct(Envelope.FieldName.AFTER);
+        assertThat(after.get("ID")).isEqualTo(0);
+
         assertNoRecordsToConsume();
     }
 
